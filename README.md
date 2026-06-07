@@ -1,6 +1,5 @@
 # 🍉 Fruit Hunter — Stress Relief Fruit Slicing Game
 
-##link: nilesh03pandey.github.io/fruit-hunter
 
 ## Overview
 
