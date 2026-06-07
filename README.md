@@ -1,5 +1,7 @@
 # 🍉 Fruit Hunter — Stress Relief Fruit Slicing Game
 
+##link: nilesh03pandey.github.io/fruit-hunter
+
 ## Overview
 
 **Fruit Hunter** is a fast-paced and visually satisfying fruit slicing game designed for **stress relief, relaxation, and pure enjoyment**.
