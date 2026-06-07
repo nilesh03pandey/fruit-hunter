@@ -294,6 +294,84 @@ function sfxPowerup(){
   }catch(e){}
 }
 
+
+/* ── Difficuilty Waves ── */
+function getWaveModifier() {
+  const elapsedMinutes =
+    (performance.now() - gameStartTime) / 60000;
+
+  /*
+    0-5 min   = Normal
+    5-7 min   = Recovery
+    7-12 min  = Hard
+    12-14 min = Recovery
+    14-20 min = Harder
+    20-22 min = Recovery
+    Repeat every 22 minutes
+  */
+
+  const cycle = elapsedMinutes % 22;
+
+  if (cycle < 5) {
+    currentWaveState = 'normal';
+    return {
+      speed: 1.00,
+      bombMult: 1.00,
+      intervalMult: 1.00,
+      countBonus: 0
+    };
+  }
+
+  if (cycle < 7) {
+    currentWaveState = 'recovery';
+    return {
+      speed: 0.92,
+      bombMult: 0.55,
+      intervalMult: 1.20,
+      countBonus: -1
+    };
+  }
+
+  if (cycle < 12) {
+    currentWaveState = 'hard';
+    return {
+      speed: 1.10,
+      bombMult: 1.25,
+      intervalMult: 0.90,
+      countBonus: 1
+    };
+  }
+
+  if (cycle < 14) {
+    currentWaveState = 'recovery';
+    return {
+      speed: 0.90,
+      bombMult: 0.50,
+      intervalMult: 1.25,
+      countBonus: -1
+    };
+  }
+
+  if (cycle < 20) {
+    currentWaveState = 'harder';
+    return {
+      speed: 1.20,
+      bombMult: 1.45,
+      intervalMult: 0.82,
+      countBonus: 2
+    };
+  }
+
+  currentWaveState = 'recovery';
+
+  return {
+    speed: 0.88,
+    bombMult: 0.45,
+    intervalMult: 1.30,
+    countBonus: -2
+  };
+}
+
 /* ═══════════════════════════════════════
    CANVAS SETUP
 ═══════════════════════════════════════ */
@@ -309,7 +387,7 @@ function resize(){
   dpr=window.devicePixelRatio||1;
   canvas.width =r.width*dpr; canvas.height=r.height*dpr;
   canvas.style.width=r.width+'px'; canvas.style.height=r.height+'px';
-  ctx.scale(dpr,dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
 }
 resize();
 new ResizeObserver(resize).observe(container);
@@ -336,54 +414,77 @@ const FRUITS=[
   {emoji:'🍈',color:'#50c83c',size:1.30},
 ];
 
-const DIFF_MILESTONES=[10,30,60,100,150,200,270,350,450,600,800,1100,1500,2000,2700,3500,4500,6000,8000,11000,15000,20000,30000,45000,70000,100000];
-const DIFF_PARAMS=[
-  {count:[1,2],bombChance:0.00,sizeScale:1.00,speed:1.00,intervalMs:[1500,2000]},
-  {count:[1,2],bombChance:0.01,sizeScale:1.00,speed:1.00,intervalMs:[1480,1980]},
-  {count:[1,2],bombChance:0.02,sizeScale:1.00,speed:1.01,intervalMs:[1460,1960]},
-  {count:[1,2],bombChance:0.03,sizeScale:0.99,speed:1.01,intervalMs:[1440,1940]},
-  {count:[1,3],bombChance:0.04,sizeScale:0.99,speed:1.02,intervalMs:[1420,1920]},
-  {count:[1,3],bombChance:0.05,sizeScale:0.98,speed:1.02,intervalMs:[1400,1900]},
-  {count:[1,3],bombChance:0.05,sizeScale:0.98,speed:1.02,intervalMs:[1400,1900]},
-  {count:[1,3],bombChance:0.05,sizeScale:0.98,speed:1.02,intervalMs:[1400,1900]},
-  {count:[1,3],bombChance:0.05,sizeScale:0.98,speed:1.02,intervalMs:[1400,1900]},
-  {count:[1,3],bombChance:0.05,sizeScale:0.98,speed:1.02,intervalMs:[1400,1900]},
-  {count:[1,3],bombChance:0.05,sizeScale:0.98,speed:1.02,intervalMs:[1400,1900]},
-  {count:[1,3],bombChance:0.05,sizeScale:0.98,speed:1.02,intervalMs:[1400,1900]},
-  {count:[1,3],bombChance:0.05,sizeScale:0.98,speed:1.02,intervalMs:[1400,1900]},
-  {count:[1,3],bombChance:0.05,sizeScale:0.98,speed:1.02,intervalMs:[1400,1900]},
-  {count:[1,3],bombChance:0.05,sizeScale:0.98,speed:1.02,intervalMs:[1400,1900]},
-  {count:[1,3],bombChance:0.05,sizeScale:0.98,speed:1.02,intervalMs:[1400,1900]},
-  {count:[1,3],bombChance:0.05,sizeScale:0.98,speed:1.02,intervalMs:[1400,1900]},
-  {count:[1,3],bombChance:0.05,sizeScale:0.98,speed:1.02,intervalMs:[1400,1900]},
-  {count:[1,3],bombChance:0.05,sizeScale:0.98,speed:1.02,intervalMs:[1400,1900]},
-  {count:[1,3],bombChance:0.05,sizeScale:0.98,speed:1.02,intervalMs:[1400,1900]},
-  {count:[1,3],bombChance:0.05,sizeScale:0.98,speed:1.02,intervalMs:[1400,1900]},
-  {count:[1,3],bombChance:0.05,sizeScale:0.98,speed:1.02,intervalMs:[1400,1900]},
-  {count:[1,3],bombChance:0.05,sizeScale:0.98,speed:1.02,intervalMs:[1400,1900]},
-  {count:[1,3],bombChance:0.05,sizeScale:0.98,speed:1.02,intervalMs:[1400,1900]},
-  {count:[2,3],bombChance:0.06,sizeScale:0.98,speed:1.03,intervalMs:[1380,1880]},
-  {count:[2,3],bombChance:0.07,sizeScale:0.97,speed:1.03,intervalMs:[1360,1860]},
-  {count:[2,3],bombChance:0.08,sizeScale:0.97,speed:1.04,intervalMs:[1340,1840]},
-  {count:[2,4],bombChance:0.09,sizeScale:0.96,speed:1.04,intervalMs:[1320,1820]},
-  {count:[2,4],bombChance:0.10,sizeScale:0.95,speed:1.05,intervalMs:[1300,1800]},
-  {count:[3,4],bombChance:0.11,sizeScale:0.94,speed:1.05,intervalMs:[1280,1780]},
-  {count:[3,4],bombChance:0.12,sizeScale:0.93,speed:1.06,intervalMs:[1260,1760]},
-  {count:[3,5],bombChance:0.13,sizeScale:0.92,speed:1.06,intervalMs:[1240,1740]},
-  {count:[3,5],bombChance:0.14,sizeScale:0.91,speed:1.07,intervalMs:[1220,1720]},
-  {count:[4,5],bombChance:0.15,sizeScale:0.90,speed:1.07,intervalMs:[1200,1700]},
-  {count:[4,5],bombChance:0.16,sizeScale:0.89,speed:1.08,intervalMs:[1180,1680]},
-  {count:[4,6],bombChance:0.17,sizeScale:0.88,speed:1.08,intervalMs:[1160,1660]},
-  {count:[4,6],bombChance:0.18,sizeScale:0.87,speed:1.09,intervalMs:[1140,1640]},
-  {count:[5,6],bombChance:0.19,sizeScale:0.86,speed:1.09,intervalMs:[1120,1620]},
-  {count:[5,7],bombChance:0.20,sizeScale:0.85,speed:1.10,intervalMs:[1100,1600]},
-  {count:[5,7],bombChance:0.21,sizeScale:0.84,speed:1.10,intervalMs:[1080,1580]},
-  {count:[5,8],bombChance:0.22,sizeScale:0.83,speed:1.11,intervalMs:[1060,1560]},
-  {count:[6,8],bombChance:0.23,sizeScale:0.82,speed:1.11,intervalMs:[1040,1540]},
-  {count:[6,9],bombChance:0.24,sizeScale:0.81,speed:1.12,intervalMs:[1020,1520]},
-  {count:[7,10],bombChance:0.25,sizeScale:0.80,speed:1.12,intervalMs:[1000,1500]},
+const DIFF_MILESTONES=[
+   20,
+   45,
+   75,
+   110,
+   150,
+   195,
+   245,
+   300,
+   360,
+   425,
+   500,
+   580,
+   670,
+   770,
+   880,
+   1000
 ];
+const DIFF_PARAMS = [
 
+  // BEGINNER (0-10 min)
+  {count:[1,1],bombChance:0.00,sizeScale:1.00,speed:1.00,intervalMs:[1700,2300]},
+  {count:[1,1],bombChance:0.00,sizeScale:1.00,speed:1.00,intervalMs:[1680,2280]},
+  {count:[1,2],bombChance:0.00,sizeScale:1.00,speed:1.00,intervalMs:[1660,2260]},
+  {count:[1,2],bombChance:0.01,sizeScale:1.00,speed:1.00,intervalMs:[1640,2240]},
+  {count:[1,2],bombChance:0.01,sizeScale:1.00,speed:1.00,intervalMs:[1620,2220]},
+  {count:[1,2],bombChance:0.02,sizeScale:1.00,speed:1.00,intervalMs:[1600,2200]},
+
+  // LEARNING (10-20 min)
+  {count:[1,2],bombChance:0.02,sizeScale:0.99,speed:1.00,intervalMs:[1580,2180]},
+  {count:[1,2],bombChance:0.03,sizeScale:0.99,speed:1.00,intervalMs:[1560,2160]},
+  {count:[1,3],bombChance:0.03,sizeScale:0.99,speed:1.00,intervalMs:[1540,2140]},
+  {count:[1,3],bombChance:0.04,sizeScale:0.99,speed:1.00,intervalMs:[1520,2120]},
+  {count:[1,3],bombChance:0.04,sizeScale:0.99,speed:1.01,intervalMs:[1500,2100]},
+  {count:[1,3],bombChance:0.05,sizeScale:0.99,speed:1.01,intervalMs:[1480,2080]},
+
+  // FRUIT DENSITY PHASE
+  {count:[2,3],bombChance:0.05,sizeScale:0.98,speed:1.01,intervalMs:[1460,2060]},
+  {count:[2,3],bombChance:0.05,sizeScale:0.98,speed:1.01,intervalMs:[1440,2040]},
+  {count:[2,4],bombChance:0.06,sizeScale:0.98,speed:1.01,intervalMs:[1420,2020]},
+  {count:[2,4],bombChance:0.06,sizeScale:0.98,speed:1.01,intervalMs:[1400,2000]},
+  {count:[2,4],bombChance:0.07,sizeScale:0.97,speed:1.02,intervalMs:[1380,1980]},
+  {count:[2,4],bombChance:0.07,sizeScale:0.97,speed:1.02,intervalMs:[1360,1960]},
+
+  // ADAPTATION PHASE
+  // Bomb chance slightly drops while speed rises
+  {count:[3,4],bombChance:0.05,sizeScale:0.97,speed:1.03,intervalMs:[1340,1940]},
+  {count:[3,4],bombChance:0.05,sizeScale:0.96,speed:1.04,intervalMs:[1320,1920]},
+  {count:[3,5],bombChance:0.06,sizeScale:0.96,speed:1.05,intervalMs:[1300,1900]},
+  {count:[3,5],bombChance:0.06,sizeScale:0.95,speed:1.06,intervalMs:[1280,1880]},
+  {count:[3,5],bombChance:0.07,sizeScale:0.95,speed:1.07,intervalMs:[1260,1860]},
+
+  // ADVANCED
+  {count:[4,5],bombChance:0.08,sizeScale:0.94,speed:1.08,intervalMs:[1240,1840]},
+  {count:[4,5],bombChance:0.09,sizeScale:0.93,speed:1.09,intervalMs:[1220,1820]},
+  {count:[4,6],bombChance:0.10,sizeScale:0.92,speed:1.10,intervalMs:[1200,1800]},
+  {count:[4,6],bombChance:0.11,sizeScale:0.91,speed:1.11,intervalMs:[1180,1780]},
+  {count:[5,6],bombChance:0.12,sizeScale:0.90,speed:1.12,intervalMs:[1160,1760]},
+
+  // EXPERT
+  {count:[5,7],bombChance:0.13,sizeScale:0.89,speed:1.13,intervalMs:[1140,1740]},
+  {count:[5,7],bombChance:0.14,sizeScale:0.88,speed:1.14,intervalMs:[1120,1720]},
+  {count:[5,8],bombChance:0.15,sizeScale:0.87,speed:1.15,intervalMs:[1100,1700]},
+  {count:[6,8],bombChance:0.17,sizeScale:0.86,speed:1.16,intervalMs:[1080,1680]},
+  {count:[6,9],bombChance:0.19,sizeScale:0.85,speed:1.18,intervalMs:[1060,1660]},
+
+  // PEAK
+  {count:[7,10],bombChance:0.22,sizeScale:0.84,speed:1.20,intervalMs:[1040,1640]},
+  {count:[8,11],bombChance:0.25,sizeScale:0.83,speed:1.22,intervalMs:[1020,1620]},
+  {count:[9,12],bombChance:0.28,sizeScale:0.82,speed:1.25,intervalMs:[1000,1600]}
+];
 /* ═══════════════════════════════════════
    STATE
 ═══════════════════════════════════════ */
@@ -396,6 +497,14 @@ let diffLevel=0,throwCount=0,nextThrow=0;
 let shakeX=0,shakeY=0,shakeDec=0.82;
 let pointer={x:0,y:0,px:0,py:0,down:false};
 let paused=false,isTouchDevice=false;
+
+/* Runtime helpers */
+let gameStartTime = performance.now();
+let currentWaveState = 'normal';
+
+function isBossWave(){
+  return throwCount > 0 && throwCount % 25 === 0;
+}
 
 /* ═══════════════════════════════════════
    DOM
@@ -428,37 +537,223 @@ function updateDiffLevel(){
 }
 function baseFruitSize(){return Math.round(58*uiScale());}
 
-function spawnWave(){
-  const d=getDiff();
-  const cn=d.count[0]+Math.floor(Math.random()*(d.count[1]-d.count[0]+1));
-  for(let i=0;i<cn;i++){
-    setTimeout(()=>{
-      if(gameState!=='playing') return;
-      if(Math.random()<d.bombChance) spawnBomb(); else spawnFruit();
-    },i*130+Math.random()*90);
+function spawnWave() {
+
+  const d = getDiff();
+  const wave = getWaveModifier();
+
+  let minCount =
+    Math.max(1, d.count[0] + wave.countBonus);
+
+  let maxCount =
+    Math.max(minCount, d.count[1] + wave.countBonus);
+
+  if (isBossWave()) {
+    minCount += 2;
+    maxCount += 3;
   }
-  throwCount++; updateDiffLevel();
-  const iv=getDiff().intervalMs;
-  nextThrow=performance.now()+iv[0]+Math.random()*(iv[1]-iv[0]);
+
+  const cn =
+    minCount +
+    Math.floor(
+      Math.random() * (maxCount - minCount + 1)
+    );
+
+  for (let i = 0; i < cn; i++) {
+
+    setTimeout(() => {
+
+      if (gameState !== 'playing')
+        return;
+
+      let bombChance =
+        d.bombChance * wave.bombMult;
+
+      if (isBossWave())
+        bombChance *= 1.6;
+
+      if (Math.random() < bombChance)
+        spawnBomb();
+      else
+        spawnFruit();
+
+    }, i * 130 + Math.random() * 90);
+
+  }
+
+  throwCount++;
+  updateDiffLevel();
+
+  const iv = d.intervalMs;
+
+  let nextInterval =
+    (
+      iv[0] +
+      Math.random() * (iv[1] - iv[0])
+    ) * wave.intervalMult;
+
+  if (isBossWave())
+    nextInterval *= 0.8;
+
+  nextThrow =
+    performance.now() + nextInterval;
 }
 
-function spawnFruit(){
-  const d=getDiff();
-  const cw=container.clientWidth,ch=container.clientHeight;
-  const fromLeft=Math.random()<0.5;
-  const x=fromLeft?-22:cw+22;
-  const y=ch*0.58+Math.random()*ch*0.18;
-  const sH=cw/700,sV=(ch/600)*d.speed;
-  const vx=fromLeft?(3.8+Math.random()*3.2)*sH:-(3.8+Math.random()*3.2)*sH;
-  const vy=-(8.5+Math.random()*5)*sV;
-  let type,special=null;
-  const r=Math.random();
-  if(r<0.03){special='golden';type={emoji:'⭐',color:'#ffd700',size:1.0};}
-  else if(r<0.05){special='crystal';type={emoji:'💎',color:'#00d4ff',size:0.9};}
-  else if(r<0.065){special='rainbow';type={emoji:'🌈',color:'#c864ff',size:1.0};}
-  else{type=FRUITS[Math.floor(Math.random()*FRUITS.length)];}
-  const sz=baseFruitSize()*d.sizeScale*(type.size||1);
-  fruits.push({x,y,vx,vy,rot:Math.random()*Math.PI*2,rotV:(Math.random()-0.5)*0.14,type,special,sz,alive:true,sliced:false,sliceAlpha:1,missed:false,sliceAngle:0});
+function spawnFruit() {
+
+  const d = getDiff();
+  const wave = getWaveModifier();
+
+  const cw = container.clientWidth;
+  const ch = container.clientHeight;
+
+  const fromLeft = Math.random() < 0.5;
+
+  const x = fromLeft ? -22 : cw + 22;
+  const y = ch * 0.58 + Math.random() * ch * 0.18;
+
+  /* Apply wave difficulty */
+
+  let speedMultiplier =
+    d.speed * wave.speed;
+
+  /* Late-game scaling */
+  const elapsedMinutes =
+    (performance.now() - gameStartTime) / 60000;
+
+  if (elapsedMinutes > 20)
+    speedMultiplier *= 1.03;
+
+  if (elapsedMinutes > 35)
+    speedMultiplier *= 1.05;
+
+  if (elapsedMinutes > 50)
+    speedMultiplier *= 1.08;
+
+  /* Boss wave boost */
+  if (isBossWave())
+    speedMultiplier *= 1.15;
+
+  const sH =
+    (cw / 700) *
+    speedMultiplier;
+
+  const sV =
+    (ch / 600) *
+    speedMultiplier;
+
+const vx = fromLeft ? (2.2 + Math.random() * 2.0) * sH : -(2.2 + Math.random() * 2.0) * sH;
+const vy = -(5.5 + Math.random() * 3.0) * sV;
+
+  let type;
+  let special = null;
+
+  const r = Math.random();
+
+  /*
+    Specials become slightly rarer
+    later in the run to avoid
+    powerup spam.
+  */
+
+  let goldenChance = 0.03;
+  let crystalChance = 0.02;
+  let rainbowChance = 0.015;
+
+  if (elapsedMinutes > 25) {
+    goldenChance = 0.025;
+    crystalChance = 0.018;
+    rainbowChance = 0.012;
+  }
+
+  if (elapsedMinutes > 45) {
+    goldenChance = 0.02;
+    crystalChance = 0.015;
+    rainbowChance = 0.01;
+  }
+
+  if (r < goldenChance) {
+
+    special = 'golden';
+
+    type = {
+      emoji: '⭐',
+      color: '#ffd700',
+      size: 1.0
+    };
+
+  } else if (r < goldenChance + crystalChance) {
+
+    special = 'crystal';
+
+    type = {
+      emoji: '💎',
+      color: '#00d4ff',
+      size: 0.9
+    };
+
+  } else if (
+    r <
+    goldenChance +
+    crystalChance +
+    rainbowChance
+  ) {
+
+    special = 'rainbow';
+
+    type = {
+      emoji: '🌈',
+      color: '#c864ff',
+      size: 1.0
+    };
+
+  } else {
+
+    type =
+      FRUITS[
+        Math.floor(
+          Math.random() * FRUITS.length
+        )
+      ];
+
+  }
+
+  let sizeMultiplier = d.sizeScale;
+
+  /* Make fruits shrink VERY slowly */
+  if (elapsedMinutes > 15)
+    sizeMultiplier *= 0.99;
+
+  if (elapsedMinutes > 30)
+    sizeMultiplier *= 0.98;
+
+  if (elapsedMinutes > 45)
+    sizeMultiplier *= 0.97;
+
+  if (isBossWave())
+    sizeMultiplier *= 0.95;
+
+  const sz =
+    baseFruitSize() *
+    sizeMultiplier *
+    (type.size || 1);
+
+  fruits.push({
+    x,
+    y,
+    vx,
+    vy,
+    rot: Math.random() * Math.PI * 2,
+    rotV: (Math.random() - 0.5) * 0.14,
+    type,
+    special,
+    sz,
+    alive: true,
+    sliced: false,
+    sliceAlpha: 1,
+    missed: false,
+    sliceAngle: 0
+  });
 }
 
 function spawnBomb(){
@@ -467,8 +762,8 @@ function spawnBomb(){
   const x=fromLeft?-22:cw+22;
   const y=ch*0.58+Math.random()*ch*0.18;
   const sH=cw/700,sV=ch/600;
-  const vx=fromLeft?(3.2+Math.random()*2.5)*sH:-(3.2+Math.random()*2.5)*sH;
-  const vy=-(7.5+Math.random()*4)*sV;
+  const vx=fromLeft?(2.0+Math.random()*1.8)*sH:-(2.0+Math.random()*1.8)*sH;
+  const vy=-(5.5+Math.random()*3.0)*sV;
   const fake=Math.random()<0.08;
   bombs.push({x,y,vx,vy,rot:0,rotV:(Math.random()-0.5)*0.09,alive:true,fake,pulse:0});
 }
@@ -1067,6 +1362,7 @@ function startGame(){
   paused=false;pauseOverlay.classList.remove('visible');
   /* Unlock AudioContext on first gesture */
   try{getAudio();}catch(e){}
+  gameStartTime = performance.now();
   runCountdown(()=>{
     score=0;lives=3;combo=0;comboTimer=0;diffLevel=0;throwCount=0;
     fruits=[];bombs=[];juiceParticles=[];floatingTexts=[];slashTrail=[];slashFlashes=[];
