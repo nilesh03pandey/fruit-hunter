@@ -32,7 +32,18 @@ canvas#gc{position:absolute;inset:0;width:100%;height:100%;touch-action:none;dis
 #combo-disp{min-height:clamp(18px,4vw,26px);font-family:'Boogaloo',cursive;font-size:clamp(14px,3vw,28px);color:#ffd700;text-shadow:0 0 12px rgba(255,215,0,0.7);white-space:nowrap;}
 
 /* POWERUP BAR */
-#powerup-bar{position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:11;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding-top:clamp(8px,2vw,14px);}
+#powerup-bar{
+  position:absolute;
+  top:clamp(52px,10vw,74px); /* moved below pause button */
+  left:50%;
+  transform:translateX(-50%);
+  z-index:11;
+  pointer-events:none;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+}
 .pu-timer{font-family:'Boogaloo',cursive;font-size:clamp(11px,2.5vw,15px);color:#fff;background:rgba(0,0,0,0.5);border-radius:20px;padding:2px 10px;display:none;align-items:center;gap:4px;border:1px solid rgba(255,255,255,0.2);}
 .pu-timer.active{display:flex;}
 
@@ -87,11 +98,13 @@ canvas#gc{position:absolute;inset:0;width:100%;height:100%;touch-action:none;dis
       <div id="combo-disp"></div>
     </div>
   </div>
+  <button id="pause-btn" aria-label="Pause">⏸</button>
   <div id="powerup-bar">
     <div class="pu-timer" id="pu-double">💎 2x SCORE <span id="pu-double-sec"></span>s</div>
     <div class="pu-timer" id="pu-slow">🌈 SLOW MO <span id="pu-slow-sec"></span>s</div>
+    <br>
   </div>
-  <button id="pause-btn" aria-label="Pause">⏸</button>
+  
   <div id="pause-overlay">
     <h2>⏸ PAUSED</h2>
     <button class="play-btn" id="btn-resume">▶ RESUME</button>
@@ -121,6 +134,7 @@ canvas#gc{position:absolute;inset:0;width:100%;height:100%;touch-action:none;dis
       <div class="legend-item">🌈 slow mo</div>
       <div class="legend-item">🎁 +30 fake bomb</div>
       <div class="legend-item">💣 lose life!</div>
+      <div class="legend-item">❤️ +1 life</div>
     </div>
     <button class="play-btn" id="btn-play">▶ START GAME</button>
     <div id="score-final" style="display:none"></div>
